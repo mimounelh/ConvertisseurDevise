@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ConvertisseurDevise</string>
+    <string-array name="arrayDevises">
+        <item>Euro</item>
+        <item>Dollar</item>
+        <item>Livre Sterling</item>
+    </string-array>
+</resources>
