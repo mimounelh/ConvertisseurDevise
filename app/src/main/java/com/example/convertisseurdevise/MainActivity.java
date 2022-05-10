@@ -32,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
     private static final double TAUX_DOLLAR_LIVRE = 0.80;
     private static final double TAUX_LIVRE_DOLLAR = 1.25;
 
+    protected final class conversionErrors {
+        public static final String SAME_CURRENCY_ERROR = "Les devises ne peuvent pas être les mêmes.";
+        public static final String EMPTY_VALUE_ERROR = "Vous devez introduir une valeur.";
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,30 +54,6 @@ public class MainActivity extends AppCompatActivity {
         etValeur = (EditText) findViewById(R.id.etValeur);
         tvResultatConversion = (TextView) findViewById(R.id.tvResultatConversion);
 
-        // Création des listeners
-        spDeviseDepart.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                checkInput();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        spDeviseArrive.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                checkInput();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         btnConvertir.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,51 +63,54 @@ public class MainActivity extends AppCompatActivity {
                     String deviseArrive = spDeviseArrive.getSelectedItem().toString();
                     String valeur = etValeur.getText().toString();
 
-                    Double resultatConversion = convertirDevise(Double.parseDouble(valeur),deviseDepart, deviseArrive);
-                    tvResultatConversion.setText(resultatConversion.toString());
+                    double resultatConversion = convertirDevise(Double.parseDouble(valeur),deviseDepart, deviseArrive);
+                    tvResultatConversion.setText(String.valueOf(resultatConversion));
                 }
             }
         });
     }
 
     private Boolean checkInput() {
-        CharSequence errorLog = "";
+        boolean isValid = true;
+        String[] errorMsg = new String[2];  // Deux erreurs possibles uniquement
         String deviseDepart = spDeviseDepart.getSelectedItem().toString();
         String deviseArrive = spDeviseArrive.getSelectedItem().toString();
         String valeur = etValeur.getText().toString();
 
         if (deviseDepart.equals(deviseArrive))
-            errorLog = "-Les devises ne peuvent pas être les mêmes.\n";
+            errorMsg[0] = conversionErrors.SAME_CURRENCY_ERROR;
 
         if (valeur.isEmpty())
-            errorLog += "-Vous devez introduir une valeur.\n";
+            errorMsg[1] = conversionErrors.EMPTY_VALUE_ERROR;
 
-        if (errorLog.length() == 0) {
-            return true;
-        } else {
-            Toast.makeText(getApplicationContext(), errorLog, Toast.LENGTH_LONG).show();
-            return false;
+        for (String error: errorMsg) {
+            if (error != null && error.length() != 0){
+                isValid = false;
+                displayMessage(error);
+            }
         }
+
+        return isValid;
     }
 
     private Double convertirDevise(double valeur, String deviseDepart, String deviseArrive){
-        Double resultatConversion = 0.0;
+        double resultatConversion = 0.0;
 
         if (deviseDepart.equals("Euro")) {
             if (deviseArrive.equals("Dollar"))
                 resultatConversion = valeur * TAUX_EURO_DOLLAR;
-            if (deviseArrive.equals("Livre"))
+            if (deviseArrive.equals("Livre Sterling"))
                 resultatConversion = valeur * TAUX_EURO_LIVRE;
         }
 
         if (deviseDepart.equals("Dollar")) {
             if (deviseArrive.equals("Euro"))
                 resultatConversion = valeur * TAUX_DOLLAR_EURO;
-            if (deviseArrive.equals("Livre"))
+            if (deviseArrive.equals("Livre Sterling"))
                 resultatConversion = valeur * TAUX_DOLLAR_LIVRE;
         }
 
-        if (deviseDepart.equals("Livre")) {
+        if (deviseDepart.equals("Livre Sterling")) {
             if (deviseArrive.equals("Euro"))
                 resultatConversion = valeur * TAUX_LIVRE_EURO;
             if (deviseArrive.equals("Dollar"))
@@ -136,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
         return resultatConversion;
     }
 
-    private void displayAlert(String message){
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    private void displayMessage(String message){
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 }
